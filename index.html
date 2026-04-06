@@ -37,46 +37,16 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        let score = 0;
-        let lastClickTime = 0;
-        const scoreElement = document.getElementById('score');
-        const coinElement = document.getElementById('coin');
-        const shopBtn = document.getElementById('shop-btn');
-
-        coinElement.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            if (e.touches.length > 1) return;
-            const now = Date.now();
-            if (now - lastClickTime < 80) return;
-            lastClickTime = now;
-
-            score++;
-            scoreElement.innerText = score;
-            tg.HapticFeedback.impactOccurred('light');
-            coinElement.style.transform = 'scale(0.95)';
-            setTimeout(() => coinElement.style.transform = 'scale(1)', 50);
-        });
-
-        shopBtn.addEventListener('click', () => {
-            tg.showConfirm("Вы хотите купить 'Супер-Ракета' за 50 ⭐️?", (confirmed) => {
-                if (confirmed) {
-                    tg.showAlert("Имитация оплаты: Запрос отправлен на сервер.");
-                }
-            });
-        });
-   <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-
-        // Твоя ссылка прописана прямо здесь:
+        // Ссылка на твой домашний сервер через Ngrok
         const SERVER_URL = "https://gladis-unroused-nicole.ngrok-free.dev"; 
         const userId = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : "test_user";
 
         let score = 0;
         const scoreElement = document.getElementById('score');
         const coinElement = document.getElementById('coin');
+        const shopBtn = document.getElementById('shop-btn');
 
-        // 1. Загружаем сохраненный счет при старте
+        // 1. Загружаем счет при старте
         fetch(`${SERVER_URL}/get-user?userId=${userId}`)
             .then(res => res.json())
             .then(data => {
@@ -85,11 +55,10 @@
             })
             .catch(err => console.error("Ошибка загрузки:", err));
 
-        // 2. Отправляем каждый клик на твой ПК
+        // 2. Отправляем клики на сервер
         coinElement.addEventListener('pointerdown', async (e) => {
             e.preventDefault();
             
-            // Анимация монетки
             coinElement.style.transform = 'scale(0.95)';
             setTimeout(() => coinElement.style.transform = 'scale(1)', 50);
             if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
@@ -102,11 +71,10 @@
                 });
                 const data = await response.json();
                 
-                // Обновляем цифры на экране
                 score = data.score;
                 scoreElement.innerText = score;
 
-                // Если куплен буст - делаем цифры оранжевыми
+                // Красим цифры, если куплен буст
                 if (data.isBoosted) {
                     scoreElement.style.color = "#ff4500"; 
                 } else {
@@ -116,4 +84,11 @@
                 console.error("Сервер недоступен:", err);
             }
         });
+
+        // 3. Подсказка для кнопки магазина
+        shopBtn.addEventListener('click', () => {
+            tg.showAlert("Для покупки буста закрой игру и напиши боту команду /buy 🚀");
+        });
     </script>
+</body>
+</html>
