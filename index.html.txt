@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Proba Shop</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            margin: 0; padding: 0; font-family: sans-serif;
+            background-color: var(--tg-theme-bg-color, #1c1c1d);
+            color: var(--tg-theme-text-color, #ffffff);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh;
+            touch-action: none; user-select: none; -webkit-user-select: none;
+        }
+        #score { font-size: 50px; font-weight: bold; margin-bottom: 20px; color: #ffd700; }
+        #coin {
+            width: 200px; height: 200px;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNTAiIGhlaWdodD0iMjUwIiB2aWV3Qm94PSIwIDAgMjUwIDI1MCI+PGNpcmNsZSBjeD0iMTI1IiBjeT0iMTI1IiByPSIxMjUiIGZpbGw9IiNGRkQ3MDAiLz48Y2lyY2xlIGN4PSIxMjUiIGN5PSIxMjUiIHI9IjEwNSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjREFBNTIwIiBzdHJva2Utd2lkdGg9IjUiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSI1MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSJib2xkIiBmaWxsPSIjREFBNTIwIj5DT0lOPC90ZXh0Pjwvc3ZnPg==');
+            background-size: cover; border-radius: 50%; box-shadow: 0 10px 30px rgba(255,215,0,0.3); transition: transform 0.05s;
+        }
+        #shop-btn {
+            margin-top: 50px; padding: 15px 40px;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white; border: none; border-radius: 15px;
+            font-size: 18px; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.3); cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="score">0</div>
+    <div id="coin"></div>
+    <button id="shop-btn">🏪 КУПИТЬ БУСТ</button>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        let score = 0;
+        let lastClickTime = 0;
+        const scoreElement = document.getElementById('score');
+        const coinElement = document.getElementById('coin');
+        const shopBtn = document.getElementById('shop-btn');
+
+        coinElement.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (e.touches.length > 1) return;
+            const now = Date.now();
+            if (now - lastClickTime < 80) return;
+            lastClickTime = now;
+
+            score++;
+            scoreElement.innerText = score;
+            tg.HapticFeedback.impactOccurred('light');
+            coinElement.style.transform = 'scale(0.95)';
+            setTimeout(() => coinElement.style.transform = 'scale(1)', 50);
+        });
+
+        shopBtn.addEventListener('click', () => {
+            tg.showConfirm("Вы хотите купить 'Супер-Ракета' за 50 ⭐️?", (confirmed) => {
+                if (confirmed) {
+                    tg.showAlert("Имитация оплаты: Запрос отправлен на сервер.");
+                }
+            });
+        });
+    </script>
+</body>
+</html>
