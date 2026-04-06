@@ -64,6 +64,56 @@
                 }
             });
         });
+   <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        // Твоя ссылка прописана прямо здесь:
+        const SERVER_URL = "https://gladis-unroused-nicole.ngrok-free.dev"; 
+        const userId = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : "test_user";
+
+        let score = 0;
+        const scoreElement = document.getElementById('score');
+        const coinElement = document.getElementById('coin');
+
+        // 1. Загружаем сохраненный счет при старте
+        fetch(`${SERVER_URL}/get-user?userId=${userId}`)
+            .then(res => res.json())
+            .then(data => {
+                score = data.score;
+                scoreElement.innerText = score;
+            })
+            .catch(err => console.error("Ошибка загрузки:", err));
+
+        // 2. Отправляем каждый клик на твой ПК
+        coinElement.addEventListener('pointerdown', async (e) => {
+            e.preventDefault();
+            
+            // Анимация монетки
+            coinElement.style.transform = 'scale(0.95)';
+            setTimeout(() => coinElement.style.transform = 'scale(1)', 50);
+            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+
+            try {
+                const response = await fetch(`${SERVER_URL}/click`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId })
+                });
+                const data = await response.json();
+                
+                // Обновляем цифры на экране
+                score = data.score;
+                scoreElement.innerText = score;
+
+                // Если куплен буст - делаем цифры оранжевыми
+                if (data.isBoosted) {
+                    scoreElement.style.color = "#ff4500"; 
+                } else {
+                    scoreElement.style.color = "#ffd700";
+                }
+            } catch (err) {
+                console.error("Сервер недоступен:", err);
+            }
+        });
     </script>
-</body>
-</html>
