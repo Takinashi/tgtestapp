@@ -29,36 +29,49 @@
 </head>
 <body>
 
-    <div id="score">0</div>
+    <div id="score">...</div>
     <div id="coin"></div>
     <button id="shop-btn">🏪 КУПИТЬ БУСТ</button>
 
     <script>
         const tg = window.Telegram.WebApp;
+        tg.ready(); // Сообщаем Телеграму, что приложение готово
         tg.expand();
 
-        // Ссылка на твой домашний сервер через Ngrok
         const SERVER_URL = "https://gladis-unroused-nicole.ngrok-free.dev"; 
         const userId = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : "test_user";
 
-        let score = 0;
         const scoreElement = document.getElementById('score');
         const coinElement = document.getElementById('coin');
         const shopBtn = document.getElementById('shop-btn');
+        
+        let currentScore = 0;
 
-        // 1. Загружаем счет при старте
-        fetch(`${SERVER_URL}/get-user?userId=${userId}`)
-            .then(res => res.json())
-            .then(data => {
-                score = data.score;
-                scoreElement.innerText = score;
-            })
-            .catch(err => console.error("Ошибка загрузки:", err));
+        // 1. Функция для синхронизации счета с сервером
+        async function syncData() {
+            try {
+                const res = await fetch(`${SERVER_URL}/get-user?userId=${userId}`);
+                const data = await res.json();
+                currentScore = data.score;
+                scoreElement.innerText = currentScore;
+                
+                if (data.isBoosted) {
+                    scoreElement.style.color = "#ff4500";
+                }
+            } catch (err) {
+                scoreElement.innerText = "Ошибка!";
+                console.error(err);
+            }
+        }
 
-        // 2. Отправляем клики на сервер
+        // Запускаем загрузку сразу при входе
+        syncData();
+
+        // 2. Обработка клика
         coinElement.addEventListener('pointerdown', async (e) => {
             e.preventDefault();
             
+            // Анимация сразу для сочности
             coinElement.style.transform = 'scale(0.95)';
             setTimeout(() => coinElement.style.transform = 'scale(1)', 50);
             if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
@@ -71,21 +84,19 @@
                 });
                 const data = await response.json();
                 
-                score = data.score;
-                scoreElement.innerText = score;
+                currentScore = data.score;
+                scoreElement.innerText = currentScore;
 
-                // Красим цифры, если куплен буст
                 if (data.isBoosted) {
                     scoreElement.style.color = "#ff4500"; 
                 } else {
                     scoreElement.style.color = "#ffd700";
                 }
             } catch (err) {
-                console.error("Сервер недоступен:", err);
+                console.error("Сервер спит:", err);
             }
         });
 
-        // 3. Подсказка для кнопки магазина
         shopBtn.addEventListener('click', () => {
             tg.showAlert("Для покупки буста закрой игру и напиши боту команду /buy 🚀");
         });
